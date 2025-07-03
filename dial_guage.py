@@ -1,0 +1,144 @@
+import math
+
+class tank_guage:
+     def __init__(self,canvas,w,h,x,y,max_value,min_value,thickness=30,txt_font="Times 50 bold",txt_colour="black",bg_colour="black"):
+        self.canvas =canvas
+        self.width = w
+        self.height = h
+        self.pos_x = x
+        self.pos_y = y
+        self.value_max = max_value
+        self.value_min = min_value
+        self.thickness=thickness
+        self.txt_font=txt_font
+        self.txt_colour=txt_colour
+        self.dial_type = dial_type
+        self.bg_colour=bg_colour
+        self.prev_value=None
+        self.count_type = count_type
+    
+     def update_tank(self,canvas,x,y):
+        self.canvas = canvas
+        self.pos_x = x
+        self.pos_y = y
+        
+     def draw_tankl(self, value,str_text):
+        
+        '''attr = [width,height,pos_x,pos_y]
+        '''
+        #add colour change effect 
+        #start as start as blue then head toward red as it counts down to zero.
+        #ff0000 is red
+        #0000ff is blue
+        attr = [self.width,self.height,self.pos_x,self.pos_y]
+        width,height,pos_x,pos_y=attr
+        rge = self.value_max-self.value_min
+        if value>0:
+            percentage = value/rge
+            
+        else:
+            percentage =1
+            
+        red = math.floor(255*(1-percentage))
+        blue = math.floor(255*(percentage))
+        colour = '#'+hex(red)[2:].zfill(2)+hex(blue)[2:].zfill(2)+'00'
+        colour = "#ffff000"
+       
+        if len(colour)!=7:
+            colour="#000000"
+        #draw tank outside
+        canvas.create_rectangle(pos_x,pos_y,width,height,outline ="green",fill =self.bg_colour,width = 2)
+        #draw fill
+        canvas.create_rectangle(pos_x,pos_y+(self.height*percentage),width,height,outline ="green",fill =colour,width = 2)
+        
+               
+
+
+    
+class dial_guage:
+
+    def __init__(self,canvas,w,h,x,y,max_value,min_value,thickness=30,txt_font="Times 50 bold",txt_colour="black",dial_type = "circle",count_type = "down",bg_colour="black"):
+        self.canvas =canvas
+        self.width = w
+        self.height = h
+        self.pos_x = x
+        self.pos_y = y
+        self.value_max = max_value
+        self.value_min = min_value
+        self.thickness=thickness
+        self.txt_font=txt_font
+        self.txt_colour=txt_colour
+        self.dial_type = dial_type
+        self.bg_colour=bg_colour
+        self.prev_value=None
+        self.count_type = count_type
+    
+    def update_dial(self,canvas,x,y):
+        self.canvas = canvas
+        self.pos_x = x
+        self.pos_y = y
+        
+    def draw_dial(self, value,str_text):
+        #set previous value to value 
+        #only display value if its decreased from previous value ie counting down or up or neither depending on self.count type.
+        if self.prev_value!=None:
+            if self.count_type == "down":
+                x = value
+                if value>self.prev_value:
+                    value = self.prev_value
+                self.prev_value = x
+            elif self.count_type == "up":
+                x = value
+                if value<self.prev_value:
+                    value = self.prev_value
+                self.prev_value = x
+            else:
+                self.prev_value=value
+                
+        else:
+            self.prev_value=value
+        
+        '''attr = [width,height,pos_x,pos_y]
+        '''
+        #add colour change effect 
+        #start as start as blue then head toward red as it counts down to zero.
+        #ff0000 is red
+        #0000ff is blue
+        attr = [self.width,self.height,self.pos_x,self.pos_y]
+        width,height,pos_x,pos_y=attr
+        rge = self.value_max-self.value_min
+        if rge<value:
+             rge = value
+             
+        if value>0:
+            percentage = value/rge
+            
+        else:
+            percentage =1
+        red = math.floor(255*(1-percentage))
+        blue = math.floor(255*(percentage))
+        colour = '#'+hex(red)[2:].zfill(2)+hex(blue)[2:].zfill(2)+'00'
+
+        if len(colour)!=7:
+            colour="#000000"
+        if self.dial_type== "semi_circle":
+
+            #convert value to degrees
+            x = (value-self.value_min)/rge*180
+            top_corner=(attr[2]-attr[0]/2,attr[3]+attr[1]/2)
+            btm_corner=(attr[2]+attr[0]/2,attr[3]-attr[1]/2)
+            self.canvas.create_arc(top_corner[0]-self.thickness,top_corner[1]+self.thickness,btm_corner[0]+self.thickness, btm_corner[1]-self.thickness, start=0, extent=180, fill="grey15",outline=self.bg_colour)
+            self.canvas.create_arc(top_corner[0]-self.thickness,top_corner[1]+self.thickness,btm_corner[0]+self.thickness, btm_corner[1]-self.thickness, start=180, extent=-x, fill=colour,outline=self.bg_colour)
+            self.canvas.create_arc(top_corner[0],top_corner[1],btm_corner[0], btm_corner[1], start=180, extent=-180, fill=self.bg_colour,outline=self.bg_colour)
+            self.canvas.create_text(pos_x,pos_y,text=str_text,justify='center',fill=self.txt_colour,font=self.txt_font)
+            
+        if self.dial_type == "circle":
+            x = (value-self.value_min)/rge*360
+            top_corner=(attr[2]-attr[0]/2,attr[3]+attr[1]/2)
+            btm_corner=(attr[2]+attr[0]/2,attr[3]-attr[1]/2)
+            self.canvas.create_arc(top_corner[0]-self.thickness,top_corner[1]+self.thickness,btm_corner[0]+self.thickness, btm_corner[1]-self.thickness, start=0, extent=359.9, fill="grey15",outline=self.bg_colour)
+            self.canvas.create_arc(top_corner[0]-self.thickness,top_corner[1]+self.thickness,btm_corner[0]+self.thickness, btm_corner[1]-self.thickness, start=0, extent=-x, fill=colour,outline=self.bg_colour)
+            self.canvas.create_arc(top_corner[0],top_corner[1],btm_corner[0], btm_corner[1], start=0, extent=359, fill=self.bg_colour,outline=self.bg_colour)
+            self.canvas.create_text(self.pos_x,self.pos_y,text=str_text,justify='center',fill=self.txt_colour,font=self.txt_font)
+    
+         
